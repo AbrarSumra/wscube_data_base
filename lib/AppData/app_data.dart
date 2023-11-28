@@ -1,12 +1,21 @@
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:wscube_data_base/model/note_model.dart';
 
 class AppDataBase {
   //private constructor (Singleton)
   AppDataBase._();
 
   static final AppDataBase instance = AppDataBase._();
+
+  ///table
+  static const String NOTE_TABLE = "notes";
+
+  ///column
+  static const String COLUMN_NOTE_ID = "noteId";
+  static const String COLUMN_NOTE_TITLE = "title";
+  static const String COLUMN_NOTE_DESC = "desc";
 
   Database? myDB;
 
@@ -19,7 +28,7 @@ class AppDataBase {
       //create all your tables here
 
       db.execute(
-          "create table notes ( noteId integer primary key autoincrement, title text, desc text )");
+          "create table $NOTE_TABLE ( $COLUMN_NOTE_ID integer primary key autoincrement, $COLUMN_NOTE_TITLE text, $COLUMN_NOTE_DESC text )");
     });
   }
 
@@ -32,16 +41,23 @@ class AppDataBase {
     }
   }
 
-  void addNote(String mTitle, String mDesc) async {
+  void addNote(NoteModel newNote) async {
     var db = await getDB();
 
-    db.insert("notes", {"title": mTitle, "desc": mDesc});
+    db.insert(NOTE_TABLE, newNote.toMap());
   }
 
-  Future<List<Map<String, dynamic>>> fetchNotes() async {
+  Future<List<NoteModel>> fetchNotes() async {
     var db = await getDB();
-    var data = await db.query("notes");
+    List<NoteModel> arrNotes = [];
 
-    return data;
+    var data = await db.query(NOTE_TABLE);
+
+    for (Map<String, dynamic> eachNote in data) {
+      var noteModel = NoteModel.fromMap(eachNote);
+      arrNotes.add(noteModel);
+    }
+
+    return arrNotes;
   }
 }

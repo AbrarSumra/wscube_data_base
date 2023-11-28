@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wscube_data_base/model/note_model.dart';
 
 import '../AppData/app_data.dart';
-import 'loginscreen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -18,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String name = "";
   late AppDataBase appData;
-  List<Map<String, dynamic>> data = [];
+  List<NoteModel> data = [];
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descController = TextEditingController();
@@ -65,9 +66,32 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView.builder(
         itemCount: data.length,
         itemBuilder: (_, index) {
+          var notes = data[index];
           return ListTile(
-            title: Text(data[index]["title"]),
-            subtitle: Text(data[index]["desc"]),
+            title: Text(notes.note_title),
+            subtitle: Text(notes.note_desc),
+            trailing: SizedBox(
+              width: 100,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.delete_forever,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -94,13 +118,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    const SizedBox(height: 11),
+                    const SizedBox(height: 21),
+                    const Text(
+                      "Add your note",
+                      style: TextStyle(fontSize: 18),
+                    ),
                     TextFormField(
                       controller: titleController,
                       decoration: InputDecoration(
-                        hintText: "Enter your Title",
+                        label: const Text("Enter your Title"),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.blue),
                         ),
                       ),
                     ),
@@ -108,23 +137,49 @@ class _HomeScreenState extends State<HomeScreen> {
                     TextFormField(
                       controller: descController,
                       decoration: InputDecoration(
-                        hintText: "Enter your Description",
+                        label: const Text("Enter your Description"),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(color: Colors.blue),
                         ),
                       ),
                     ),
                     const SizedBox(height: 11),
-                    ElevatedButton(
-                      onPressed: () {
-                        appData.addNote(
-                          titleController.text.toString(),
-                          descController.text.toString(),
-                        );
-                        getAllNotes();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Add"),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            var title = titleController.text.toString();
+                            var desc = descController.text.toString();
+
+                            appData.addNote(
+                              NoteModel(
+                                notex_id: 0,
+                                note_title: title,
+                                note_desc: desc,
+                              ),
+                            );
+                            titleController.clear();
+                            descController.clear();
+                            getAllNotes();
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "Add",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
