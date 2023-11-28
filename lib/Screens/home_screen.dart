@@ -76,14 +76,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      /// EDIT NOTE
+                      openBottomSheet(
+                        isUpdate: true,
+                        noteId: notes.note_id,
+                        noteTitle: notes.note_title,
+                        noteDesc: notes.note_desc,
+                      );
+                    },
                     icon: const Icon(
                       Icons.edit,
                       color: Colors.blue,
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text("Delete?"),
+                            content:
+                                const Text("are you sure want to delete ?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  /// DELETE NOTES
+                                  appData.deleteNote(notes.note_id);
+                                  getAllNotes();
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("Yes"),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("No"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
                     icon: const Icon(
                       Icons.delete_forever,
                       color: Colors.red,
@@ -111,87 +147,111 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (_) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 21),
-                    const Text(
-                      "Add your note",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    TextFormField(
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        label: const Text("Enter your Title"),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 11),
-                    TextFormField(
-                      controller: descController,
-                      decoration: InputDecoration(
-                        label: const Text("Enter your Description"),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 11),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            var title = titleController.text.toString();
-                            var desc = descController.text.toString();
-
-                            appData.addNote(
-                              NoteModel(
-                                notex_id: 0,
-                                note_title: title,
-                                note_desc: desc,
-                              ),
-                            );
-                            titleController.clear();
-                            descController.clear();
-                            getAllNotes();
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text(
-                            "Add",
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+          openBottomSheet();
         },
         child: const Icon(
           Icons.add,
           size: 40,
         ),
       ),
+    );
+  }
+
+  void openBottomSheet({
+    bool isUpdate = false,
+    int noteId = 0,
+    String noteTitle = "",
+    String noteDesc = "",
+  }) {
+    titleController.text = noteTitle;
+    descController.text = noteDesc;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 21),
+              Text(
+                isUpdate ? "Update your Note" : "Add Your Note",
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 21),
+              TextFormField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  label: const Text("Enter your Title"),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.blue),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 11),
+              TextFormField(
+                controller: descController,
+                decoration: InputDecoration(
+                  label: const Text("Enter your Description"),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.blue),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 11),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (titleController.text.isNotEmpty &&
+                          descController.text.isNotEmpty) {
+                        if (isUpdate) {
+                          /// UPDATE NOTES
+                          appData.updateNote(
+                            NoteModel(
+                              note_id: noteId,
+                              note_title: titleController.text.toString(),
+                              note_desc: descController.text.toString(),
+                            ),
+                          );
+                        } else {
+                          /// ADD NOTES
+                          appData.addNote(
+                            NoteModel(
+                              note_id: 0,
+                              note_title: titleController.text.toString(),
+                              note_desc: descController.text.toString(),
+                            ),
+                          );
+                        }
+                      }
+                      getAllNotes();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      isUpdate ? "Update" : "Add",
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

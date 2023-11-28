@@ -47,6 +47,31 @@ class AppDataBase {
     db.insert(NOTE_TABLE, newNote.toMap());
   }
 
+  void updateNote(NoteModel updatedNote) async {
+    var db = await getDB();
+
+    /// Method 1
+    db.update(
+      NOTE_TABLE,
+      updatedNote.toMap(),
+      where: "$COLUMN_NOTE_ID = ? ",
+      whereArgs: ["${updatedNote.note_id}"],
+    );
+
+    /// Method 2
+    /*db.update(
+      NOTE_TABLE,
+      updatedNote.toMap(),
+      where: "$COLUMN_NOTE_ID = ${updatedNote.note_id} ",
+    );*/
+  }
+
+  void deleteNote(int id) async {
+    var db = await getDB();
+
+    db.delete(NOTE_TABLE, where: "$COLUMN_NOTE_ID = $id");
+  }
+
   Future<List<NoteModel>> fetchNotes() async {
     var db = await getDB();
     List<NoteModel> arrNotes = [];
