@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wscube_data_base/model/note_model.dart';
 
@@ -18,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String name = "";
+  bool isLike = false;
   late AppDataBase appData;
   List<NoteModel> data = [];
 
@@ -59,78 +61,127 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushReplacement(context,
                   MaterialPageRoute(builder: (ctx) => const LoginScreen()));
             },
-            icon: const Icon(Icons.logout_outlined),
+            icon: const Icon(EvaIcons.log_out),
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (_, index) {
-          var notes = data[index];
-          return ListTile(
-            title: Text(notes.note_title),
-            subtitle: Text(notes.note_desc),
-            trailing: SizedBox(
-              width: 100,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      /// EDIT NOTE
-                      openBottomSheet(
-                        isUpdate: true,
-                        noteId: notes.note_id,
-                        noteTitle: notes.note_title,
-                        noteDesc: notes.note_desc,
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.edit,
-                      color: Colors.blue,
+      body: data.isNotEmpty
+          ? ListView.builder(
+              itemCount: data.length,
+              itemBuilder: (_, index) {
+                var notes = data[index];
+                return InkWell(
+                  onLongPress: () {
+                    /// EDIT NOTE
+                    openBottomSheet(
+                      isUpdate: true,
+                      noteId: notes.note_id,
+                      noteTitle: notes.note_title,
+                      noteDesc: notes.note_desc,
+                    );
+                  },
+                  child: ListTile(
+                    title: Text(
+                      notes.note_title,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Text(notes.note_desc),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.primaries[index],
+                      child: Text(
+                        "${index + 1}",
+                        style: const TextStyle(
+                          fontSize: 21,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                isLike = !isLike;
+                              });
+                            },
+                            icon: Icon(
+                              isLike ? EvaIcons.heart : EvaIcons.heart_outline,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Delete?"),
+                                    content: const Text(
+                                        "are you sure want to delete ?"),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          /// DELETE NOTES
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: SizedBox(
+                                                height: 30,
+                                                child: Row(
+                                                  children: [
+                                                    const Text(
+                                                        "Note deleted..."),
+                                                    const Spacer(),
+                                                    TextButton(
+                                                      onPressed: () {},
+                                                      child: const Text(
+                                                        "Undo",
+                                                        style: TextStyle(
+                                                          color: Colors.blue,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                          appData.deleteNote(notes.note_id);
+                                          getAllNotes();
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("Yes"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("No"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.delete_forever,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text("Delete?"),
-                            content:
-                                const Text("are you sure want to delete ?"),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  /// DELETE NOTES
-                                  appData.deleteNote(notes.note_id);
-                                  getAllNotes();
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text("Yes"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text("No"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.delete_forever,
-                      color: Colors.red,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
+            )
+          : const Center(
+              child: Text("No Notes Added"),
             ),
-          );
-        },
-      ),
       drawer: Drawer(
         child: SafeArea(
           child: Padding(
@@ -222,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           /// UPDATE NOTES
                           appData.updateNote(
                             NoteModel(
+                              user_id: 1,
                               note_id: noteId,
                               note_title: titleController.text.toString(),
                               note_desc: descController.text.toString(),
@@ -231,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           /// ADD NOTES
                           appData.addNote(
                             NoteModel(
+                              user_id: 1,
                               note_id: 0,
                               note_title: titleController.text.toString(),
                               note_desc: descController.text.toString(),

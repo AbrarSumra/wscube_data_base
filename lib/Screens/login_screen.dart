@@ -1,7 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wscube_data_base/Screens/sign_up_screen.dart';
 
 import '../widgets/custom_elevated_button.dart';
 import 'home_screen.dart';
@@ -27,9 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-            image:
-                AssetImage("assets/images/Login Screen BackGround Image.avif"),
-            fit: BoxFit.cover),
+          image: AssetImage("assets/images/Login Screen BackGround Image.avif"),
+          fit: BoxFit.cover,
+        ),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -40,22 +43,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.only(top: 150, left: 30),
                 height: 270,
                 width: double.infinity,
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Welcome",
-                      style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                    AnimatedTextKit(
+                      repeatForever: true,
+                      isRepeatingAnimation: true,
+                      animatedTexts: [
+                        WavyAnimatedText(
+                          "Welcome",
+                          textStyle: GoogleFonts.habibi(
+                            fontSize: 30,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      "Back",
-                      style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                    AnimatedTextKit(
+                      repeatForever: true,
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          "Back",
+                          speed: const Duration(milliseconds: 250),
+                          textStyle: GoogleFonts.damion(
+                            fontSize: 35,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        )
+                      ],
                     ),
                   ],
                 ),
@@ -154,7 +171,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.black,
                         ),
                         CustomElevatedButton(
-                            onTap: () {}, text: "Create New Account")
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => SignUpScreen()));
+                          },
+                          text: "Create New Account",
+                        )
                       ],
                     ),
                   ],
