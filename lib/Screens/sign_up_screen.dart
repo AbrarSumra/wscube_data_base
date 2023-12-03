@@ -1,21 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wscube_data_base/AppData/app_data.dart';
 import 'package:wscube_data_base/Screens/login_screen.dart';
 import 'package:wscube_data_base/model/user_model.dart';
 import 'package:wscube_data_base/widgets/cstm_text_field.dart';
 import 'package:wscube_data_base/widgets/custom_elevated_button.dart';
 
-import 'home_screen.dart';
-
 class SignUpScreen extends StatelessWidget {
   SignUpScreen({super.key});
 
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +79,7 @@ class SignUpScreen extends StatelessWidget {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const HomeScreen()));
+                                builder: (context) => const LoginScreen()));
                       }
                     },
                     text: "Sign Up",

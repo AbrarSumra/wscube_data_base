@@ -4,6 +4,7 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wscube_data_base/AppData/app_data.dart';
 import 'package:wscube_data_base/Screens/sign_up_screen.dart';
 
 import '../widgets/custom_elevated_button.dart';
@@ -20,8 +21,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  TextEditingController userName = TextEditingController();
-  TextEditingController passWord = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passController = TextEditingController();
 
   bool _passwordVisible = false;
 
@@ -82,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     TextFormField(
-                      controller: userName,
+                      controller: emailController,
                       validator: ((value) {
                         if (value!.isEmpty) return "Please Enter Username";
                         return null;
@@ -101,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
-                      controller: passWord,
+                      controller: passController,
                       validator: ((value) {
                         if (value!.isEmpty || value.length < 8) {
                           return "Please Enter Atleast 8 Characters Password";
@@ -138,16 +139,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: Colors.indigo,
                         ),
                         onPressed: () async {
+                          if (emailController.text.isNotEmpty &&
+                              passController.text.isNotEmpty) {
+                            var email = emailController.text.toString();
+                            var pass = passController.text.toString();
+
+                            var appData = AppDataBase.instance;
+                            if (await appData.authenticate(email, pass)) {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (ctx) => const HomeScreen()));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Invalid Email and Password!!!")));
+                            }
+                          }
+
                           var prefs = await SharedPreferences.getInstance();
                           prefs.setBool(LoginScreen.LOGIN_PREF_KEY, true);
 
-                          var name = userName.text.toString();
+                          var name = emailController.text.toString();
                           prefs.setString(LoginScreen.USERNAME_PREF_KEY, name);
-
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const HomeScreen()));
                         },
                         child: const Text(
                           "Login",
@@ -172,8 +187,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         CustomElevatedButton(
                           onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => SignUpScreen()));
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (ctx) => SignUpScreen()));
                           },
                           text: "Create New Account",
                         )

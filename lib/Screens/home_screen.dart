@@ -19,9 +19,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String name = "";
-  bool isLike = false;
-  late AppDataBase appData;
+
   List<NoteModel> data = [];
+
+  int? uid = 0;
+
+  late AppDataBase appData;
+
+  bool isLike = false;
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descController = TextEditingController();
@@ -31,11 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     appData = AppDataBase.instance;
     getUserName();
+    getUid();
+  }
+
+  void getUid() async {
+    var prefs = await SharedPreferences.getInstance();
+    uid = prefs.getInt(AppDataBase.LOGIN_UID);
     getAllNotes();
   }
 
   void getAllNotes() async {
-    data = await appData.fetchNotes();
+    data = await appData.fetchNotes(uid!);
     setState(() {});
   }
 
@@ -72,9 +83,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 var notes = data[index];
                 return InkWell(
                   onLongPress: () {
-                    /// EDIT NOTE
+                    /// Update the Data
                     openBottomSheet(
                       isUpdate: true,
+                      uId: notes.user_id,
                       noteId: notes.note_id,
                       noteTitle: notes.note_title,
                       noteDesc: notes.note_desc,
@@ -211,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void openBottomSheet({
     bool isUpdate = false,
     int noteId = 0,
+    int uId = 0,
     String noteTitle = "",
     String noteDesc = "",
   }) {
@@ -273,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           /// UPDATE NOTES
                           appData.updateNote(
                             NoteModel(
-                              user_id: 1,
+                              user_id: uId,
                               note_id: noteId,
                               note_title: titleController.text.toString(),
                               note_desc: descController.text.toString(),
@@ -283,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           /// ADD NOTES
                           appData.addNote(
                             NoteModel(
-                              user_id: 1,
+                              user_id: uid!,
                               note_id: 0,
                               note_title: titleController.text.toString(),
                               note_desc: descController.text.toString(),
